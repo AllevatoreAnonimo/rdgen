@@ -45,11 +45,18 @@ jobs:
           repository: rustdesk/rustdesk
           submodules: recursive
 
-      - name: Install prerequisites
+      - name: Bypass mirror Azure
         run: |
-          sudo apt-get install ca-certificates -y
-          sudo apt-get update -y
-          sudo apt-get install -y \
+          sudo sed -i '/azure\.archive\.ubuntu\.com/d' /etc/apt/apt-mirrors.txt || true
+          cat /etc/apt/apt-mirrors.txt
+
+      - name: Install prerequisites
+        timeout-minutes: 15
+        run: |
+          APT="-o Acquire::Retries=3 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15"
+          sudo apt-get $APT update -y
+          sudo apt-get $APT install -y \
+            ca-certificates \
             clang \
             cmake \
             curl \
